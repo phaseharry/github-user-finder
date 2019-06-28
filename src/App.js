@@ -4,6 +4,7 @@ import axios from 'axios'
 import './App.css'
 import Nav from './components/layout/Nav'
 import Users from './components/users/Users'
+import Search from './components/users/Search'
 
 class App extends Component {
   /* 
@@ -33,21 +34,63 @@ class App extends Component {
     users: [],
     loading: false
   }
-  componentDidMount() {
-    this.setState({ loading: true })
-    axios
-      .get('https://api.github.com/users')
-      .then(res => res.data)
-      .then(users => this.setState({ users, loading: false }))
-      .catch(err => console.error(err))
+  // componentDidMount() {
+  //   this.setState({ loading: true })
+  //   axios
+  //     .get(
+  //       `https://api.github.com/users?client_id=
+  //       ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
+  //       ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+  //     )
+  //     .then(res => res.data)
+  //     .then(users => this.setState({ users, loading: false }))
+  //     .catch(err => console.error(err))
+  // }
+  // Search Github users
+  searchUsers = async text => {
+    try {
+      this.setState({ loading: true })
+      const res = await axios.get(
+        `https://api.github.com/search/users?q=${text}&client_id=
+          ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
+          ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+      )
+      this.setState({ users: res.data.items, loading: false })
+      console.log(res.data)
+      /* 
+        Github sends back an object with the users we want assigned as a value to the 'items' key. 
+        This is for pagination purposes as there might be thousands of users due to the search.
+        There is also a 'total_count' key with a value representing the total amount of users popped up due to 
+        your search keyword.
+      */
+    } catch (err) {
+      console.error(err)
+      this.setState({ loading: false })
+    }
   }
+
+  // Clear users from state
+  clearUsers = () => {
+    this.setState({
+      users: [],
+      loading: false //to ensure our state is not loading
+    })
+  }
+
+  showClear = () => this.state.users.length > 0
 
   render() {
     const { loading, users } = this.state
+    const { searchUsers, clearUsers, showClear } = this
     return (
       <div className="App">
         <Nav />
         <div className="container">
+          <Search
+            searchUsers={searchUsers}
+            clearUsers={clearUsers}
+            showClear={showClear()}
+          />
           <Users loading={loading} users={users} />
         </div>
       </div>

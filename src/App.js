@@ -4,11 +4,14 @@ import axios from 'axios'
 
 import './App.css'
 
-// components
+// layouy components
 import Nav from './components/layout/Nav'
-import Users from './components/users/Users'
-import Search from './components/users/Search'
 import Alert from './components/layout/Alert'
+
+// user components
+import Users from './components/users/Users'
+import User from './components/users/User'
+import Search from './components/users/Search'
 
 //pages
 import About from './components/pages/About'
@@ -39,6 +42,7 @@ class App extends Component {
   */
   state = {
     users: [],
+    user: {},
     loading: false,
     alert: null
   }
@@ -88,6 +92,23 @@ class App extends Component {
   // Shows the clear button when there's text entered
   showClear = () => this.state.users.length > 0
 
+  // Get a single Github user for a detailed profile
+  getUser = username => {
+    this.setState({ loading: true })
+    return axios
+      .get(
+        `https://api.github.com/users/${username}?&client_id=
+    ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
+    ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+      )
+      .then(res => res.data)
+      .then(user => {
+        console.log(user)
+        this.setState({ user, loading: false })
+      })
+      .catch(err => console.error(err))
+  }
+
   // Set Alert when there's an issue
   setAlert = (msg, type) => {
     this.setState({ alert: { msg, type } })
@@ -95,8 +116,8 @@ class App extends Component {
   }
 
   render() {
-    const { loading, users, alert } = this.state
-    const { searchUsers, clearUsers, showClear, setAlert } = this
+    const { loading, users, alert, user } = this.state
+    const { searchUsers, clearUsers, showClear, setAlert, getUser } = this
     return (
       <Router>
         <div className="App">
@@ -105,6 +126,17 @@ class App extends Component {
             <Alert alert={alert} />
             <Switch>
               <Route path="/about" component={About} />
+              <Route
+                path="/user/:login"
+                render={props => (
+                  <User
+                    {...props}
+                    user={user}
+                    getUser={getUser}
+                    loading={loading}
+                  />
+                )}
+              />
               <Route
                 exact
                 path="/"

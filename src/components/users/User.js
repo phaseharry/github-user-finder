@@ -3,15 +3,20 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
 import Spinner from '../layout/Spinner'
+import Repos from '../repos/Repos'
 
 class User extends Component {
   componentDidMount() {
-    this.props.getUser(this.props.match.params.login) //grabs the login parameter from our url we stated in the Route in the App component
+    const { getUser, getUserRepos, match } = this.props
+    getUser(match.params.login) //grabs the login parameter from our url we stated in the Route in the App component
+    getUserRepos(match.params.login)
   }
 
   static propTypes = {
     users: PropTypes.object.isRequired,
+    repos: PropTypes.array.isRequired,
     getUser: PropTypes.func.isRequired,
+    getUserRepos: PropTypes.func.isRequired,
     loading: PropTypes.bool.isRequired
   }
 
@@ -31,7 +36,9 @@ class User extends Component {
       public_gists,
       hireable
     } = this.props.user
-    if (this.props.loading) {
+    const { loading, repos } = this.props
+
+    if (loading) {
       return <Spinner />
     }
     return (
@@ -50,7 +57,7 @@ class User extends Component {
             <img
               src={avatar_url}
               className="round-img"
-              alt="Github user profile image"
+              alt="Github user profile"
               style={{ width: '150px' }}
             />
             <h1>{name}</h1>
@@ -84,7 +91,7 @@ class User extends Component {
               <li>
                 {blog && (
                   <Fragment>
-                    <strong>Blog: </strong> {blog}
+                    <strong>Website: </strong> {blog}
                   </Fragment>
                 )}
               </li>
@@ -97,6 +104,7 @@ class User extends Component {
           <div className="badge badge-light">Public Repos: {public_repos}</div>
           <div className="badge badge-dark">Public Gists: {public_gists}</div>
         </div>
+        <Repos repos={repos} />
       </Fragment>
     )
   }

@@ -43,6 +43,7 @@ class App extends Component {
   state = {
     users: [],
     user: {},
+    repos: [],
     loading: false,
     alert: null
   }
@@ -109,6 +110,23 @@ class App extends Component {
       .catch(err => console.error(err))
   }
 
+  // Grabs the specified users' lateast repos
+  getUserRepos = username => {
+    this.setState({ loading: true })
+    return axios
+      .get(
+        `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=
+    ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
+    ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+      )
+      .then(res => res.data)
+      .then(repos => {
+        console.log(repos)
+        this.setState({ repos, loading: false })
+      })
+      .catch(err => console.error(err))
+  }
+
   // Set Alert when there's an issue
   setAlert = (msg, type) => {
     this.setState({ alert: { msg, type } })
@@ -116,8 +134,15 @@ class App extends Component {
   }
 
   render() {
-    const { loading, users, alert, user } = this.state
-    const { searchUsers, clearUsers, showClear, setAlert, getUser } = this
+    const { loading, users, alert, user, repos } = this.state
+    const {
+      searchUsers,
+      clearUsers,
+      showClear,
+      setAlert,
+      getUser,
+      getUserRepos
+    } = this
     return (
       <Router>
         <div className="App">
@@ -132,7 +157,9 @@ class App extends Component {
                   <User
                     {...props}
                     user={user}
+                    repos={repos}
                     getUser={getUser}
+                    getUserRepos={getUserRepos}
                     loading={loading}
                   />
                 )}

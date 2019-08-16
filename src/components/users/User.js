@@ -15,7 +15,10 @@ const User = props => {
   }, [])
   /* useEffect hooks runs the effect(callback function passed in) after every render.
    This would lead to an infinite loop if you want to make a data fetch and store it in state (componentDidMount). 
-   To stop it, we pass in an empty array as the 2nd argument to useEffect
+   To stop it, we pass in an empty array as the 2nd argument to useEffect.
+   Within the array is where we define conditions when we want the useEffect callback to run. 
+   If no array is passed in as the 2nd argument then it defaults to run after every render. 
+   Passing it an empty array causes it to run once and that mimics the componentDidMount lifecycle method.
   */
 
   const {

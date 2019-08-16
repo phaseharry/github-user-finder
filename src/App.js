@@ -1,10 +1,10 @@
-import React, { Component, Fragment } from 'react'
+import React, { useState, Fragment } from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import axios from 'axios'
 
 import './App.css'
 
-// layouy components
+// layout components
 import Nav from './components/layout/Nav'
 import Alert from './components/layout/Alert'
 
@@ -16,7 +16,7 @@ import Search from './components/users/Search'
 //pages
 import About from './components/pages/About'
 
-class App extends Component {
+const App = () => {
   /* 
     constructor runs when the component runs (as soon as it loads) 
     It is used to store state and bind methods to the component.
@@ -39,14 +39,14 @@ class App extends Component {
   /*
     Modern React/JS
     needs to be specifically configured in Babel at the moment
+    state = {
+      users: [],
+      user: {},
+      repos: [],
+      loading: false,
+      alert: null
+    }
   */
-  state = {
-    users: [],
-    user: {},
-    repos: [],
-    loading: false,
-    alert: null
-  }
   // componentDidMount() {
   //   this.setState({ loading: true })
   //   axios
@@ -59,16 +59,22 @@ class App extends Component {
   //     .then(users => this.setState({ users, loading: false }))
   //     .catch(err => console.error(err))
   // }
+  const [users, setUsers] = useState([])
+  const [user, setUser] = useState({})
+  const [repos, setRepos] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [alert, setAlert] = useState(null) 
   // Search Github users
-  searchUsers = async text => {
+  const searchUsers = async text => {
     try {
-      this.setState({ loading: true })
+      setLoading(true)
       const res = await axios.get(
         `https://api.github.com/search/users?q=${text}&client_id=
           ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
           ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
       )
-      this.setState({ users: res.data.items, loading: false })
+      setLoading(false)
+      setUsers(res.data.items)
       console.log(res.data)
       /* 
         Github sends back an object with the users we want assigned as a value to the 'items' key. 
@@ -78,24 +84,22 @@ class App extends Component {
       */
     } catch (err) {
       console.error(err)
-      this.setState({ loading: false })
+      setLoading(false)
     }
   }
 
   // Clear users from state
-  clearUsers = () => {
-    this.setState({
-      users: [],
-      loading: false //to ensure our state is not loading
-    })
+  const clearUsers = () => {
+    setUsers([])
+    setLoading(false)
   }
 
   // Shows the clear button when there's text entered
-  showClear = () => this.state.users.length > 0
+  const showClear = () => users.length > 0
 
   // Get a single Github user for a detailed profile
-  getUser = username => {
-    this.setState({ loading: true })
+  const getUser = username => {
+    setLoading(true)
     return axios
       .get(
         `https://api.github.com/users/${username}?&client_id=
@@ -105,14 +109,15 @@ class App extends Component {
       .then(res => res.data)
       .then(user => {
         console.log(user)
-        this.setState({ user, loading: false })
+        setUser(user)
+        setLoading(false)
       })
       .catch(err => console.error(err))
   }
 
   // Grabs the specified users' lateast repos
-  getUserRepos = username => {
-    this.setState({ loading: true })
+  const getUserRepos = username => {
+    setLoading(true)
     return axios
       .get(
         `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=
@@ -122,27 +127,18 @@ class App extends Component {
       .then(res => res.data)
       .then(repos => {
         console.log(repos)
-        this.setState({ repos, loading: false })
+        setRepos(repos)
+        setLoading(false)
       })
       .catch(err => console.error(err))
   }
 
   // Set Alert when there's an issue
-  setAlert = (msg, type) => {
-    this.setState({ alert: { msg, type } })
-    setTimeout(() => this.setState({ alert: null }), 4000)
+  const popAlert = (msg, type) => {
+    setAlert({ msg, type })
+    setTimeout(() =>  setAlert(null), 4000)
   }
 
-  render() {
-    const { loading, users, alert, user, repos } = this.state
-    const {
-      searchUsers,
-      clearUsers,
-      showClear,
-      setAlert,
-      getUser,
-      getUserRepos
-    } = this
     return (
       <Router>
         <div className="App">
@@ -174,7 +170,7 @@ class App extends Component {
                     <Search
                       searchUsers={searchUsers}
                       clearUsers={clearUsers}
-                      setAlert={setAlert}
+                      setAlert={popAlert}
                       showClear={showClear()}
                     />
                     <Users loading={loading} users={users} />
@@ -186,7 +182,7 @@ class App extends Component {
         </div>
       </Router>
     )
-  }
+
 }
 
 export default App

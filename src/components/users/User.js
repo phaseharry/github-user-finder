@@ -1,12 +1,16 @@
-import React, { useEffect, Fragment } from 'react'
-import PropTypes from 'prop-types'
+import React, { useEffect, useContext, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 
 import Spinner from '../layout/Spinner'
 import Repos from '../repos/Repos'
 
+import GithubContext from '../../context/github/githubContext'
+
 const User = props => {
-  const { getUser, getUserRepos, match, loading, repos } = props
+  const { match } = props
+  const githubContext = useContext(GithubContext)
+  const { user, loading, getUser, repos, getUserRepos } = githubContext
+
 
   useEffect(() => {
     getUser(match.params.login) //grabs the login parameter from our url we stated in the Route in the App component
@@ -35,7 +39,7 @@ const User = props => {
     public_repos,
     public_gists,
     hireable
-  } = props.user
+  } = user
 
   if (loading) {
     return <Spinner />
@@ -106,14 +110,6 @@ const User = props => {
       <Repos repos={repos} />
     </Fragment>
   )
-}
-
-User.propTypes = {
-  user: PropTypes.object.isRequired,
-  repos: PropTypes.array.isRequired,
-  getUser: PropTypes.func.isRequired,
-  getUserRepos: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired
 }
 
 export default User

@@ -1,6 +1,9 @@
-import React, { useState, Fragment } from 'react'
+import React, { Fragment } from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
-import axios from 'axios'
+
+// importing both the Github and Alert state created by the Context API
+import GithubState from './context/github/GithubState'
+import AlertState from './context/alert/AlertState'
 
 import './App.css'
 
@@ -47,140 +50,43 @@ const App = () => {
       alert: null
     }
   */
-  // componentDidMount() {
-  //   this.setState({ loading: true })
-  //   axios
-  //     .get(
-  //       `https://api.github.com/users?client_id=
-  //       ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-  //       ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
-  //     )
-  //     .then(res => res.data)
-  //     .then(users => this.setState({ users, loading: false }))
-  //     .catch(err => console.error(err))
-  // }
-  const [users, setUsers] = useState([])
-  const [user, setUser] = useState({})
-  const [repos, setRepos] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [alert, setAlert] = useState(null) 
-  // Search Github users
-  const searchUsers = async text => {
-    try {
-      setLoading(true)
-      const res = await axios.get(
-        `https://api.github.com/search/users?q=${text}&client_id=
-          ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-          ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
-      )
-      setLoading(false)
-      setUsers(res.data.items)
-      console.log(res.data)
-      /* 
-        Github sends back an object with the users we want assigned as a value to the 'items' key. 
-        This is for pagination purposes as there might be thousands of users due to the search.
-        There is also a 'total_count' key with a value representing the total amount of users popped up due to 
-        your search keyword.
-      */
-    } catch (err) {
-      console.error(err)
-      setLoading(false)
-    }
-  }
-
-  // Clear users from state
-  const clearUsers = () => {
-    setUsers([])
-    setLoading(false)
-  }
-
-  // Shows the clear button when there's text entered
-  const showClear = () => users.length > 0
-
-  // Get a single Github user for a detailed profile
-  const getUser = username => {
-    setLoading(true)
-    return axios
-      .get(
-        `https://api.github.com/users/${username}?&client_id=
-    ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-    ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
-      )
-      .then(res => res.data)
-      .then(user => {
-        console.log(user)
-        setUser(user)
-        setLoading(false)
-      })
-      .catch(err => console.error(err))
-  }
-
-  // Grabs the specified users' lateast repos
-  const getUserRepos = username => {
-    setLoading(true)
-    return axios
-      .get(
-        `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=
-    ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-    ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
-      )
-      .then(res => res.data)
-      .then(repos => {
-        console.log(repos)
-        setRepos(repos)
-        setLoading(false)
-      })
-      .catch(err => console.error(err))
-  }
-
-  // Set Alert when there's an issue
-  const popAlert = (msg, type) => {
-    setAlert({ msg, type })
-    setTimeout(() =>  setAlert(null), 4000)
-  }
-
+    // Wrapping the entire application with the github and alert state so it has access to it
     return (
-      <Router>
-        <div className="App">
-          <Nav />
-          <div className="container">
-            <Alert alert={alert} />
-            <Switch>
-              <Route path="/about" component={About} />
-              <Route
-                path="/user/:login"
-                render={props => (
-                  <User
-                    {...props}
-                    user={user}
-                    repos={repos}
-                    getUser={getUser}
-                    getUserRepos={getUserRepos}
-                    loading={loading}
-                  />
-                )}
-              />
-              <Route
-                exact
-                path="/"
-                render={(
-                  props //props in this case is the route props (path, history, etc)
-                ) => (
-                  <Fragment>
-                    <Search
-                      searchUsers={searchUsers}
-                      clearUsers={clearUsers}
-                      setAlert={popAlert}
-                      showClear={showClear()}
+      <GithubState>
+        <AlertState>
+        <Router>
+          <div className="App">
+            <Nav />
+            <div className="container">
+              <Alert />
+              <Switch>
+                <Route path="/about" component={About} />
+                <Route
+                  path="/user/:login"
+                  render={props => (
+                    <User
+                      {...props}
                     />
-                    <Users loading={loading} users={users} />
-                  </Fragment>
-                )}
-              />
-            </Switch>
+                  )}
+                />
+                <Route
+                  exact
+                  path="/"
+                  render={(
+                    props //props in this case is the route props (path, history, etc)
+                  ) => (
+                    <Fragment>
+                      <Search />
+                      <Users />
+                    </Fragment>
+                  )}
+                />
+              </Switch>
+            </div>
           </div>
-        </div>
-      </Router>
+        </Router>
+        </AlertState>
+      </GithubState>
     )
 
 }

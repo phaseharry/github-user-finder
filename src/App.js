@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 
 // importing both the Github and Alert state created by the Context API
@@ -12,12 +12,12 @@ import Nav from './components/layout/Nav'
 import Alert from './components/layout/Alert'
 
 // user components
-import Users from './components/users/Users'
 import User from './components/users/User'
-import Search from './components/users/Search'
 
 //pages
 import About from './components/pages/About'
+import Home from './components/pages/Home'
+import NotFound from './components/pages/NotFound'
 
 const App = () => {
   /* 
@@ -72,15 +72,10 @@ const App = () => {
                 <Route
                   exact
                   path="/"
-                  render={(
-                    props //props in this case is the route props (path, history, etc)
-                  ) => (
-                    <Fragment>
-                      <Search />
-                      <Users />
-                    </Fragment>
-                  )}
+                  render={props => <Home {...props}/>} //props in this case is the route props (path, history, etc)
                 />
+                <Route component={NotFound}/> 
+                {/* Putting it at the end means when React will check for the inputted url and if it does not match any known routes, then render this page  */}
               </Switch>
             </div>
           </div>

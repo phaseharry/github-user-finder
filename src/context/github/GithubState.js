@@ -10,6 +10,20 @@ import {
   GET_REPOS
 } from '../types'
 
+/* 
+  Checking whether the application is in production or development. If it is in production mode then we will use a global 
+  variable that's assigned to the process. If it is not in production then we'll use a local environment file to grab keys
+*/
+let githubClientId, githubClientSecret
+
+if(process.env.NODE_ENV !== 'production'){
+  githubClientId = process.env.REACT_APP_GITHUB_CLIENT_ID
+  githubClientSecret = process.env.REACT_APP_GITHUB_CLIENT_SECRET
+} else {
+  githubClientId = process.env.GITHUB_CLIENT_ID
+  githubClientSecret = process.env.GITHUB_CLIENT_SECRET
+}
+
 const GithubState = props => {
   const initialState = {
     users: [],
@@ -26,8 +40,8 @@ const GithubState = props => {
       setLoading()
       const res = await axios.get(
         `https://api.github.com/search/users?q=${text}&client_id=
-          ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-          ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+          ${githubClientId}&client_secret=
+          ${githubClientSecret}`
       )
       dispatch({
         type: SEARCH_USERS,
@@ -50,8 +64,8 @@ const GithubState = props => {
     return axios
       .get(
         `https://api.github.com/users/${username}?&client_id=
-    ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-    ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+    ${githubClientId}&client_secret=
+    ${githubClientSecret}`
       )
       .then(res => res.data)
       .then(user => {
@@ -66,8 +80,8 @@ const GithubState = props => {
     return axios
       .get(
         `https://api.github.com/users/${username}/repos?per_page=5&sort=created:asc&client_id=
-    ${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=
-    ${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
+    ${githubClientId}&client_secret=
+    ${githubClientSecret}`
       )
       .then(res => res.data)
       .then(repos => {
